@@ -12,7 +12,13 @@
       <image style="width: 69px; height: 69px;"  src="./rescource/1.png"></image>
     </view>
   </view>
-  <view wx:if="{{!pageone}}">
-  
+  <view wx:if="{{pagetwo}}" data-hi="WeChat" bindtap="tapName">
+     <image style="width: 69px; height: 69px;"  src="./rescource/2.svg"></image>
+  </view>
+  <view wx:if="{{pagetwo}}">
+     返回信息
+  </view>
+  <view wx:if="{{pagetwo}}">
+  {{restext}}
   </view>
 </view>

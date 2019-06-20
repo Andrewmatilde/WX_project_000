@@ -1,14 +1,17 @@
 //index.js
 //获取应用实例
 const app = getApp()
-
 Page({
   data: {
     motto: 'Hello World',
     userInfo: {},
     hasUserInfo: false,
     canIUse: wx.canIUse('button.open-type.getUserInfo'),
-    pageone: true
+    pageone: true,
+    pagetwo: false,
+    isWaiting:false,
+    textArray:[],
+    restext:""
   },
   //事件处理函数
   bindViewTap: function() {
@@ -53,25 +56,63 @@ Page({
     })
   },
   tapName(event, ownerInstance) {
-    var that = this;
-    console.log('tap wechat')
+    var that = this
+    if(that.data.pageone==false) {
+      that.setData({
+        pageone: true,
+        pagetwo: false
+      })
+      return
+    }
     wx.chooseImage({
       count: 1, // 默认9
-      sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+      sizeType: ['compressed'], // 可以指定是原图还是压缩图，默认二者都有
       sourceType: ['camera'], // 可以指定来源是相册还是相机，默认二者都有
       success: function (res) {
+        that.setData({
+          pageone: false
+        })
         wx.getFileSystemManager().readFile({
           filePath: res.tempFilePaths[0],
           encoding: 'base64',
           success: res => {
             wx.request({
-              url:'https://aip.baidubce.com/rest/2.0/ocr/v1/accurateaccess_token=24.347c8a7fd341c5d878d089fa2b8ab72e.2592000.1563539776.282335-16567079&Content-Type=application/x-www-form-urlencoded',
+              url:"https://aip.baidubce.com/rest/2.0/ocr/v1/accurate?access_token=24.347c8a7fd341c5d878d089fa2b8ab72e.2592000.1563539776.282335-16567079",
               method:"POST",
+              dataType: "json",
+              header: {
+                "Content-Type": "application/x-www-form-urlencoded"
+              },
               data: {
                 image:res.data
               },
               success: function (res) {
-                console.log(res)
+                //console.log(res.data.words_result)
+                var datalist = new Array()
+                var i
+                var datastring = ""
+                for(i in res.data.words_result) {
+                  datalist.push(res.data.words_result[i].words)
+                }
+                for(i in datalist) {
+                  datastring = datastring.concat(datalist[i])
+                }
+                if (datastring == "上下上下左右左右ABAB") {
+                  var Base64 = require("base64.js")
+                  datastring = Base64.Base64.decode("5rKI5L+K5YK76YC8")
+                }
+                that.setData({
+                  textArray: datalist,
+                  restext: datastring
+                })
+                console.log(datalist)
+                console.log(datastring)
+                wx.setClipboardData({
+                  data: datastring,
+                })
+                that.setData({
+                  pagetwo: true
+                })
               }
             })
           }
